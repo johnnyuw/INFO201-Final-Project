@@ -1,0 +1,34 @@
+---
+title: "Project Proposal"
+output: html_document
+author: Johnny Kim, Aaron Jones, Dylan Brown
+date: "2023-11-09"
+---
+
+# Data and Audience
+### Data
+The dataset is all US car accidents in the contiguous US from 2016-2023. It
+includes a ton of information about the location of the accident and its time.
+The most important variables seem to be the city, state, and severity. It was
+collected using multiple APIs that provide streaming traffic incident (or event)
+data. The data is objective, publicly-available information without an agenda to
+push. 
+
+### Audience
+The target audience would be those who regularly drive in the US. The audience
+likely doesn't know much about the data, as they would only look at the
+accidents if they're experiencing traffic and curious as to what caused it. We
+may need to explain terms that regular drivers don't know, like what "civil
+twilight" means for determining the time of day. We want to show the audience
+how COVID affected accidents, give information about the causes of accidents
+that drivers may not know or think about, and how different parts of the
+country drive differently and cause accidents.
+
+# Technical Description
+Our data is already a CSV file. For now, all we need is dplyr to process the
+data and ggplot to visualize it. As for visualization, we plan on making maps of
+the country, more specifically, heat maps for different accident causes and
+where they're most prevalent, and a map divided into states with their
+respective number of accidents. We would also plot the number of accidents
+overall in the country and compare that with times relating to the COVID
+lockdown.

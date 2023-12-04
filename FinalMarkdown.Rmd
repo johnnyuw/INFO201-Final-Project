@@ -4,3 +4,64 @@ author: "Johnny Kim, Aaron Jones, Dylan Brown"
 date: "2023-12-04"
 output: html_document
 ---
+
+``` {r}
+# Libraries
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(readr)
+```
+
+``` {r}
+# Reading the accident data, will take a few seconds
+accidents <- read_delim("small-accidents.csv", show_col_types=FALSE)
+head(accidents, 10)
+```
+
+# Introduction
+In 2020, the United States was heavily affected by the COVID-19 pandemic and the slight madness that ensued. Out of fear of the sickness spreading and hospitals being overrun, the US enforced a nationwide lockdown. People had to stay in their homes and were not able to drive to work, school, or social gatherings. This led to a dramatic decrease in the amount of driving in a nation that was completely car dependent. What interests our group and the reasoning for this project is how the COVID-19 pandemic of 2020 affected driving habits of US citizens. To do this, we used two data sets, one containing the entirety of recorded car accidents in the US from 2016 to 2023, as well as a data set containing the number of COVID cases across the US through the 2020 pandemic.
+
+We already know quite a bit of context about this project before diving into the data. First, we already know that the COVID pandemic directly led to a decrease of US car accidents because of the long-lasting pandemic. Also, we already know that there are contributing factors that cause car accidents that would likely remain unaffected by the COVID pandemic, such as distracted driving or intoxication.
+
+In this project, we have three main objectives that we aim to achieve. The first is related to connecting the COVID dataset and the US accidents dataset and that is: “How did COVID-19 impact the number of accidents in the US?”. Regarding this question, our objective is primarily to creatively visualize how the increase in COVID cases per US state affected driving accidents in those states. If accidents did occur during the pandemic, how many? What did the leading factor do accidents that remained throughout COVID? Did certain types of accidents completely disappear after COVID occurred? Did new forms of accidents come into existence after COVID? These are the types of questions we hope to answer by connecting these two data sets. The second objective is: “How is accident data different across states?”. For this objective, we will be looking purely at the US accidents dataset and comparing the types of accidents between US states. Do some types of accidents occur in some states but not others? What types of habits do we see that exist in some parts of the United States but not others? These are the types of questions we hope to answer with the second objective. Finally, we reach our final objective: “What factors impact accidents that drivers aren’t aware of?”. For this final objective, we will also be focusing on purely the US accidents dataset. Our goal for this final objective is to be informative. We want to let people know what causes accidents that they may not be aware of. Being mindful of these factors, we hope, will lead to safer drivers and less accidents.
+
+So why? Why should you read this report? Why should you care? Well, if you live in the United States, this information could potentially help you steer (get it?) away from harm while on the road. Knowing this information can help you be mindful of what causes incidents in your area more than others. It will increase your understanding of how the COVID-19 pandemic affected the most important form of transportation in your country. Lastly, it will help you be aware of what habits you can break to keep you safe.
+
+# Data
+
+# Methods
+
+``` {r}
+crossing <- sum(accidents$Crossing)
+junction <- sum(accidents$Junction)
+roundabout <- sum(accidents$Roundabout)
+railway <- sum(accidents$Railway)
+stop <- sum(accidents$Stop)
+calming <- sum(accidents$Traffic_Calming)
+signal <- sum(accidents$Traffic_Signal)
+loop <- sum(accidents$Turning_Loop)
+
+nearby <- data.frame(landmark = character(), count = numeric())
+nearby[1,] <- crossing
+nearby[2,] <- junction
+nearby[3,] <- roundabout
+nearby[4,] <- railway
+nearby[5,] <- stop
+nearby[6,] <- calming
+nearby[7,] <- signal
+nearby[8,] <- loop
+ggplot(nearby, aes(x=landmark, y=count)) +
+  geom_col() +
+  labs(
+    title = "Nearby Landmarks of Accidents",
+    x = "Landmarks",
+    y = "Accidents"
+  )
+```
+
+# Results
+
+# What do the Results Mean?
+
+# Summary

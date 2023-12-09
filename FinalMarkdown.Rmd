@@ -1,9 +1,14 @@
 ---
 title: "Final Markdown"
 author: "Johnny Kim, Aaron Jones, Dylan Brown"
-date: "2023-12-04"
+date: "2023-12-08"
 output: html_document
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE,
+                  	warning = FALSE)
+```
 
 ``` {r}
 # Libraries
@@ -11,12 +16,12 @@ library(ggplot2)
 library(dplyr)
 library(tidyverse)
 library(readr)
+library(usmap)
 ```
 
 ``` {r}
 # Reading the accident data, will take a few seconds
 accidents <- read_delim("small-accidents.csv", show_col_types=FALSE)
-head(accidents, 10)
 ```
 
 # Introduction
@@ -29,39 +34,194 @@ In this project, we have three main objectives that we aim to achieve. The first
 So why? Why should you read this report? Why should you care? Well, if you live in the United States, this information could potentially help you steer (get it?) away from harm while on the road. Knowing this information can help you be mindful of what causes incidents in your area more than others. It will increase your understanding of how the COVID-19 pandemic affected the most important form of transportation in your country. Lastly, it will help you be aware of what habits you can break to keep you safe.
 
 # Data
+We used U.S. car accident and U.S. COVID-19 case and death data datasets from Kaggle, because they provide comprehensive information on the areas we want to explore — COVID-19 and car accidents — and how they correlate with each other. We also knew that we would be able to combine these datasets since they are both showing values over time with a large common period of data between the two.
+
+Our datasets were both published on Kaggle. The car accident data combines traffic data from various APIs, including state departments of transportation and traffic cameras. The COVID-19 dataset originates from the New York Times. The New York Times used a combination of data from The COVID Tracking Project and the U.S. Department of Health and Human Services. 
+
+For the accident data, it was amalgamated by Sobhan Moosavi, a data scientist at Lyft. The data was collected from a large variety of sources, including state governments and the U.S. government as well as separate traffic cameras and sensors and law enforcement agencies. Most of the data in the COVID-19 dataset was collected by the New York Times from the U.S. Department of Health and Human Services.
+
+The U.S. accidents dataset can only be used for “non-commercial, research, or academic applications.” The COVID-19 data appears to be completely free without any restrictions.
+
+The COVID-19 dataset is about covering the number of cases and deaths in a given day and given county from January 1, 2020 to May 12, 2022. This covers the entire United States. The U.S. accidents dataset covers all U.S. states except Hawai’i from February 2016 to March 2023. It is designed to cover all accidents during this time in the 49 states, however the author says that during data collection, there may have been some network connectivity issues that caused missing data on some days.
+
+The only potential issue with data quality was that the accident dataset showed some days as having a possibly unfeasible number of accidents, such as 1 or 3. We chose to still include these in the data, as the values weren’t missing or 0, and they are still possible values. Our final dataset covers the number of car accidents, COVID-19 cases, and deaths for each day during the common period, which is January 1, 2021 through May 13, 2022.
+Each row represents a date and the car accidents and COVID-19 cases and deaths on that day.
+
+We have 840 observations.
+
+The relevant variables are accidents, cases and deaths. All three of these variables were coded by creating sums of the values per day of both datasets.
+
+There is one day with negative deaths listed and one day with negative cases listed. Other than that, all of the data is good and complete.
 
 # Methods
+We first decided to remove the majority of the variables in the US Accident dataset. This is because the dataset was way too large and had unnecessary variables. We only kept the state and other variables relating to the weather, such as temperature, humidity, visibility, and the conditions, as well as the variables saying what road landmark was close to accidents, such as a railway, a stop sign, a crossing, etc. We did this using `read_delim()` to read the csv files and `select()` to select the columns we needed. This cut down the dataset’s file size by about a fifth. For the COVID data, we only really needed the date along with the number of cases and deaths on that day. We used the same methods to achieve this. To merge the data, we decided to merge the data by the date, and then count the number of accidents on each date, as well as the number of cases and deaths on that day. We used `merge()` to merge the dataset and `rename()` to rename columns to make sense. When we merged the data, we only used the data from the accidents dataset from 2020-2022. This is because the COVID data is only during 2020-2022 and we wanted to compare the accidents during COVID time. However, with our US Accident data, we kept all the data as we wanted the all the data, including before, during, and after the COVID lockdowns. Having a bigger dataset also gives us more information and a better understanding of what different things may cause more accidents.
+
+With this data, we counted the number of accidents near different landmarks using by making two vectors, one with the name of the landmarks and the other with the counts, then made a data frame using `data.frame()`. We then created a bar plot visualizing the number of accidents close to each landmark type. This gives insight into what landmarks may be more dangerous. 
+
+We then grouped the accidents into states, counting the number of accidents in each state and creating a heatmap from that. We also categorized accidents occurring in low/regular temperatures as well as low/regular visibility, then graphed how many accidents happened in each state off those categories. Furthermore, we grouped those accidents by the top 3 weather conditions that lead to accidents in each state. Grouping by these categories per state gives insight into which conditions cause more accidents in each state, and how the conditions might differ between states.
+
+# Results
+This section will go over the results that we found from the data. This project had three major objectives in the form of questions that we hoped to answer. These three include “How did COVID-19 impact the number of accidents in the US?”, “How is accident data different across states?”, and “Are there certain factors about each state that might lead to more accidents?”. We will analyze the results from each of these objectives in order.
+First, “How did COVID-19 impact the number of accidents in the US?” For this objective, we decided to merge the US Accidents data set and the COVID-19 cases and deaths data set. When comparing the two data sets, we took the number of US Accidents starting from March 2020 to May of 2022 and compared that to the number of COVID-caused deaths. We used the number of COVID deaths instead of COVID cases because the visualization was more appealing in the form of a line graph. Below is a copy of our compiled graph.
+``` {r}
+projectset2 <- read_delim("projectset.csv")
+
+projectset2 %>%
+  filter(cases > 0) %>% 
+  filter(deaths > 0) %>% 
+  ggplot(aes(x = date)) +
+  geom_line(aes(y = n, color = "Car Accidents")) +
+  geom_line(aes(y = deaths, color = "COVID-19 Deaths")) +
+  labs(title = "COVID-19 vs. Car Accidents in the U.S.",
+       x = "Time",
+       y = "COVID-19 Deaths and Car Accidents") +
+  theme_minimal() +
+  scale_color_manual(
+    values = c("Car Accidents" = "blue", "COVID-19 Deaths" = "red"),
+    labels = c("Car Accidents", "COVID-19 Deaths")) +
+    theme(legend.position = "top")
+```
+In this data, we can see the effect of the two COVID quarantines on the number of accidents. As the number of COVID-related deaths rises, two nationally mandated quarantines begin, one in 2020 and one in 2021. During the time of these quarantines, we see two direct decreases in the number of car accidents.
+Next, “How is accident data different across states?”. For this objective, we took the number of accidents in the US from 2016 to 2023 and separated them by state. The results, shown on a heatmap of the US using the library “usmaps”, display which states are more accident-prone.
+``` {r}
+# selecting weather stuffs
+weather_accidents <- accidents %>% 
+  select(State, `Temperature(F)`, `Humidity(%)`, `Visibility(mi)`, Weather_Condition)
+
+# creating variable n which counts number of accidents based by state
+map_data_accidents <- weather_accidents %>% 
+  group_by(State) %>% 
+  summarise(n = n())
+
+#printing n from high to low
+sorted <- map_data_accidents %>% 
+  arrange(desc(n))
+
+# renaming 'State' to 'state' so that usmap doesnt get angry
+map_data_accidents <- map_data_accidents %>% 
+  rename(state = State)
+
+# using usmap to create a heatmap of number of accidents based on state (random test)
+library(usmap)
+plot_usmap(data = map_data_accidents, values = "n", color = "red")+
+  scale_fill_continuous(low = "white", high = "red", name = "Number of US Car Accidents (2016-2023)", label = scales::comma)+
+  theme(legend.position = "right")
+```
+The results show that the most accident-prone states are California, Florida, Texas, and South Carolina, followed by the rest of the country. This is displayed in the form of a heatmap of the US.
+Finally, “Are there certain characteristics about each state that might lead to more accidents?”. For this objective, we created two graphs. The first displayed the 3 highest weather conditions per state and its correlation to accidents.
+``` {r}
+# creating a visualization of number of instances caused by low temperature, low visibility, bad weather conditions
+# objectives:
+
+# count number of times an accident occurred with low temperature (under 34 degrees F is considered risky as ice may develop)
+low_temp <- accidents %>% 
+  group_by(State) %>% 
+  filter(`Temperature(F)`<34)
+
+# now i will have to write another that counts the number of these instances by state
+count_low_temp <- low_temp %>% 
+  group_by(State) %>% 
+  summarise(n = n())
+
+# repeating process for regular temp values
+regular_temp <- accidents %>% 
+  group_by(State) %>% 
+  filter(`Temperature(F)`>34)
+
+count_regular_temp <- regular_temp %>% 
+  group_by(State) %>% 
+  summarise(n = n())
+
+# count number of times an accident occurred with low visibility (under 5 miles is considered fair/low visibility)
+low_vis <- accidents %>% 
+  group_by(State) %>% 
+  filter(`Visibility(mi)`<5)
+count_low_vis <-  low_vis %>% 
+  group_by(State) %>% 
+  summarise(n = n())
+
+# repeating process for regular visibility values
+regular_vis <- accidents %>% 
+  group_by(State) %>% 
+  filter(`Visibility(mi)`>5)
+count_regular_vis <- regular_vis %>% 
+  group_by(State) %>%
+  summarise(n = n())
+
+# count number of times an accident occurred with poor weather condition, getting the top 3 for simplicity
+suppressMessages(
+  bad_weather <- accidents %>% 
+    group_by(State, Weather_Condition) %>%
+    summarise(n = n()) %>% 
+    arrange(State, desc(n)) %>% 
+    group_by(State) %>% 
+    slice_head(n = 3)
+)
+
+# creating a visualization for bad weather
+ggplot(bad_weather, aes(State, n, fill = Weather_Condition))+
+  geom_bar(stat = "identity")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        legend.position = "right") + 
+  labs(title = "Correlation of US accidents and 3 highest Weather Conditions per State",
+       x = "State",
+       y = "Number of Accidents of the 3 highest Weather Conditions")
+```
+The second showed the number of accidents that occurred when the temperature was low (under 34 degrees Fahrenheit), when the temperature was regular, when the visibility was low (under 5 miles), and when the visibility was regular.
+``` {r}
+# visualize these instance counts, by state, in the form of a bubble chart (geom_point)
+combined_data <- bind_rows(
+  mutate(count_low_temp, condition = "Low Temperature"),
+  mutate(count_low_vis, condition = "Low Visibility"),
+  mutate(count_regular_temp, condition = "Regular Temperature"),
+  mutate(count_regular_vis, condition = "Regular Visibility")
+)
+ggplot(combined_data, aes(State, n, fill = condition))+
+  geom_bar(stat = "identity", position = "dodge")+
+  labs(title = "Accidents Count based on Weather Conditions",
+       x = "State",
+       y = "Number of Accidents")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+The results show that, although there are some outliers, most accidents occur when the weather conditions are nominal, when the temperature is regular, and when the visibility is regular.
 
 ``` {r}
-crossing <- sum(accidents$Crossing)
-junction <- sum(accidents$Junction)
-roundabout <- sum(accidents$Roundabout)
-railway <- sum(accidents$Railway)
-stop <- sum(accidents$Stop)
-calming <- sum(accidents$Traffic_Calming)
-signal <- sum(accidents$Traffic_Signal)
-loop <- sum(accidents$Turning_Loop)
+landmark <- c("crossing", "junction", "roundabout", "railway", "stop",
+                 "calming", "signal", "loop")
+count <- c(sum(accidents$Crossing),
+              sum(accidents$Junction),
+              sum(accidents$Roundabout),
+              sum(accidents$Railway),
+              sum(accidents$Stop),
+              sum(accidents$Traffic_Calming),
+              sum(accidents$Traffic_Signal),
+              sum(accidents$Turning_Loop))
+nearby <- data.frame(landmark, count)
 
-nearby <- data.frame(landmark = character(), count = numeric())
-nearby[1,] <- crossing
-nearby[2,] <- junction
-nearby[3,] <- roundabout
-nearby[4,] <- railway
-nearby[5,] <- stop
-nearby[6,] <- calming
-nearby[7,] <- signal
-nearby[8,] <- loop
-ggplot(nearby, aes(x=landmark, y=count)) +
+ggplot(nearby, aes(x=reorder(landmark, -count), y=count, fill=landmark)) +
   geom_col() +
   labs(
     title = "Nearby Landmarks of Accidents",
     x = "Landmarks",
     y = "Accidents"
+  ) + scale_fill_discrete(
+    labels = c("Traffic Calming",
+               "Traffic Crossing",
+               "Junction",
+               "Loop",
+               "Railway",
+               "Roundabout",
+               "Traffic Signal", 
+               "Stop Sign")
   )
 ```
 
-# Results
+# Findings
+Our results tell us that, as we hypothesized due to less people driving, there were far fewer car accidents during COVID-19 lockdowns. As for our weather data as correlated with accidents, our graph of the correlation between accidents and the three highest weather conditions per state seems to show that the vast majority of accidents happen under normal weather conditions, regular temperature and regular visibility. This may be because “normal” weather conditions are the most common. Because of the results we see, we cannot determine that there is a direct correlation between weather or environmental conditions and driving accidents, at least from this dataset. While a correlation may exist, our results do not prove one. It is still important to emphasize the importance of driving carefully in low temperature and low visibility situations. When looking at the nearby landmarks to accidents, most accidents occur near intersections or crosswalks, which indicate the importance of increased caution both at intersections and when pedestrians or cyclists could be crossing.
 
-# What do the Results Mean?
+The COVID-19 findings are not necessarily directly applicable in the future, unless other quarantines due to COVID-19 or another infectious disease arise. However, the weather and landmark data from our traffic data will most likely continue to be true unless driving regulations change drastically or self-driving cars become prevalent. The findings in regards to car accidents can be extremely useful in knowing where to exercise caution while driving and understanding dangerous areas or situations while driving.
+
+Considering our accident dataset, there are many, many variables and a vast amount of data that we simply did not have the time to explore fully. Zooming in and focusing on specific variables, such as the starting latitude of accidents, could uncover more revelations about how certain conditions or locations are correlated with accident rates. The dataset we used is extremely vast and has a lot more potential. As for our story about helping drivers know what to be mindful of, further exploring the variables we didn’t get a chance to focus on could be helpful with discovering potential driving dangers.
 
 # Summary
+COVID-19 created some havoc in our world, causing lockdowns/quarantines, and this is clearly reflected in the data. This has also affected traffic accidents and transportation, as people stayed home and stopped moving around the world. During the two lockdowns, accidents, as well as COVID deaths, were a lot lower. Now, as the world returns to normal, we hope this data brings information and awareness to those who are driving or using public transportation. We hope drivers learn to be more aware around intersections, and that even though nominal weather may seem safe, to still be cautious as that's when the majority of accidents occur. 
